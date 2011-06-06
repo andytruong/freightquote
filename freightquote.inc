@@ -51,9 +51,12 @@ function freightquote_quote($origin, $destination, $products) {
         $option_id = $option->CarrierOptionId;
         $id = "{$quote_id}-{$option_id}";
         $accessorials[] = $option->CarrierName;
+        $option_label = strpos($option->CarrierName, 'Freightquote') === FALSE;
+        $option_label = $option_label ? sprintf('Freightquote » %s', $option->CarrierName) : $option->CarrierName;
         $quotes[] = array(
-          'option_label' => sprintf('FreightQuote » %s', $option->CarrierName),
-          'rate' => $option->QuoteAmount, # freightquote_markup($option->QuoteAmount)
+          'option_label' => $option_label,
+          'rate' => freightquote_markup($option->QuoteAmount),
+          # 'rate' => $option->QuoteAmount,
           'notes' => $option->IsGuaranteed ? 'Guaranteed: Yes' : '',
         );
       }
