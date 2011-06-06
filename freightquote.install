@@ -1,0 +1,51 @@
+<?php
+/**
+ * @file Install freightquote module
+ */
+
+/**
+ * Implements hook_install().
+ */
+function freightquote_install() {
+  drupal_install_schema('freightquote');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function freightquote_uninstall() {
+  drupal_uninstall_schema('freightquote');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function freightquote_schema() {
+  $schema['freightquote'] = array(
+    'description' => '',
+    'fields' => array(
+      'vid' => array(
+        'description' => 'Node version id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'description' => 'Node ID',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'info' => array(
+        'description' => 'Store freightquote settings per product',
+        'type' => 'text',
+        'size' => 'medium',
+      ),
+    ),
+    'primary key' => array('vid'),
+  );
+
+  return $schema;
+}
