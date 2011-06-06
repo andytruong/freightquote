@@ -47,8 +47,7 @@ function freightquote_quote($origin, $destination, $products) {
     if (isset($response->QuoteCarrierOptions->CarrierOption)) {
       $quotes = array();
       $quote_id = $response->QuoteId;
-      $options = $response->QuoteCarrierOptions->CarrierOption;
-      foreach ($options as $option) {
+      foreach (__freightquote_array($response->QuoteCarrierOptions->CarrierOption) as $option) {
         $option_id = $option->CarrierOptionId;
         $id = "{$quote_id}-{$option_id}";
         $accessorials[] = $option->CarrierName;
