@@ -1,4 +1,7 @@
 <?php
+/**
+ * @file
+ */
 
 /**
  * Settings page callback.
@@ -40,6 +43,24 @@ function freightquote_settings_form() {
     '#description' => 'This parameter is required by freightquote service.',
     '#default_value' => variable_get('freightquote_HazardousMaterialContactPhone', ''),
   );
+  
+  $form['freightquote_markup_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Markup type'),
+    '#options' => array(
+      '%' => t('Percentage (%)'),
+      'x' => t('Multiplier (x)'),
+      '$' => t('Addition ($)'),
+    ),
+    '#default_value' => variable_get('freightquote_markup_type', '%'),
+  );
+
+  $form['freightquote_markup'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Shipping rate markup'),
+    '#default_value' => variable_get('freightquote_markup', '0'),
+    '#description' => t('Markup shipping rate quote by currency amount, percentage, or multiplier.'),
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -58,6 +79,8 @@ function freightquote_settings_form_submit($form, &$form_state) {
   $keys[] = 'freightquote_username';
   $keys[] = 'freightquote_HazardousMaterialContactName';
   $keys[] = 'freightquote_HazardousMaterialContactPhone';
+  $keys[] = 'freightquote_markup_type';
+  $keys[] = 'freightquote_markup';
   foreach ($keys as $key) {
     variable_set($key, $values[$key]);
   }

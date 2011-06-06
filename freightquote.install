@@ -15,6 +15,12 @@ function freightquote_install() {
  */
 function freightquote_uninstall() {
   drupal_uninstall_schema('freightquote');
+  variable_del('freightquote_username');
+  variable_del('freightquote_password');
+  variable_del('freightquote_HazardousMaterialContactName');
+  variable_del('freightquote_HazardousMaterialContactPhone');
+  variable_del('freightquote_markup');
+  variable_del('freightquote_markup_type');
 }
 
 /**

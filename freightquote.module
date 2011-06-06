@@ -41,14 +41,6 @@ function freightquote_menu() {
  * Implements hook_form_alter().
  */
 function freightquote_form_alter(&$form, $form_state, $form_id) {
-  if ($form_id === 'uc_cart_checkout_form') {
-    $form['panes']['quotes']['pickup_date'] = array(
-      '#type' => 'date',
-      '#title' => t('Pickup date'),
-      '#weight' => -1,
-    );
-  }
-
   if (!uc_product_is_product_form($form)) {
     return;
   }

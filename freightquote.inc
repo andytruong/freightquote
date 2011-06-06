@@ -1,9 +1,15 @@
 <?php
-
 /**
  * @file Helper function for freightquote
  */
 
+/**
+ *
+ * @param type $origin
+ * @param type $destination
+ * @param type $products
+ * @return type 
+ */
 function freightquote_quote($origin, $destination, $products) {
   $Origin = __freighquote_location_origin($origin);
   $Destination = __freighquote_location_destination($destination);
@@ -30,8 +36,8 @@ function freightquote_quote($origin, $destination, $products) {
   );
 
   $options = array();
-  #$options['proxy_host'] = '127.0.0.1';
-  #$options['proxy_port'] = '8888';
+  $options['proxy_host'] = variable_get('freightquote_proxy_host', NULL);
+  $options['proxy_port'] = variable_get('freightquote_proxy_port', NULL);
   $client = new SoapClient(FREIGHTQUOTE_SERVICE_URL . '?wsdl', $options);
   $response = $client->__soapCall('GetRatingEngineQuote', array($params));
 
@@ -48,7 +54,7 @@ function freightquote_quote($origin, $destination, $products) {
         $accessorials[] = $option->CarrierName;
         $quotes[] = array(
           'option_label' => sprintf('FreightQuote » %s', $option->CarrierName),
-          'rate' => $option->QuoteAmount,
+          'rate' => $option->QuoteAmount, # freightquote_markup($option->QuoteAmount)
           'notes' => $option->IsGuaranteed ? 'Guaranteed: Yes' : '',
         );
       }
@@ -105,25 +111,15 @@ function __freightquote_products($products) {
   return $Products;
 }
 
+/**
+ * Helper function to get the pickup date.
+ * 
+ * @return string - Formatted date.
+ */
 function __freightquote_pickup_date() {
-  if (isset($_POST['freightquote_pickup'])) {
-    $date = $_POST['freightquote_pickup'];
-    $_SESSION['freightquote_pickup'] = $_POST['freightquote_pickup'];
-  }
-  else {
-    if (isset($_SESSION['freightquote_pickup'])) {
-      $date = $_SESSION['freightquote_pickup'];
-    }
-    else {
-      $date = date('Y-m-d');
-    }
-  }
-
-  list($month, $day, $year) = explode('-', $date);
-  $PickupDate = new DateTime();
-  $PickupDate->setDate($year, $month, $day);
-  $PickupDate = $PickupDate->format('Y-m-d\TH:i:s');
-  return $PickupDate;
+  $pickupdate = freightquote_get_next_working_day();
+  $pickupdate = date('Y-m-d\TH:i:s');
+  return $pickupdate;
 }
 
 function __freighquote_location_destination($destination = NULL) {
@@ -188,4 +184,82 @@ function __freightquote_array($data) {
   }
   
   return $data;
+}
+
+/**
+ * Helper function to get next workding day.
+ */
+function freightquote_get_next_working_day($date = null) {
+  $time = is_string($date) ? strtotime($date) : (is_int($date) ? $date : time());
+  $y = date('Y', $time);
+  // calculate federal holidays
+  $holidays = array();
+  // month/day (jan 1st). iteration/wday/month (3rd monday in january)
+
+  $hdata[] = '1/1'; # newyr
+  $hdata[] = '7/4'; # jul4
+  $hdata[] = '11/11'; # vet
+  $hdata[] = '12/25'; # xmas
+  $hdata[] = '3/1/1'; # mlk
+  $hdata[] = '3/1/2'; # pres
+  $hdata[] = '5/1/5'; # memo
+  $hdata[] = '1/1/9'; # labor
+  $hdata[] = '2/1/10'; # col
+  $hdata[] = '4/4/11'; # thanks
+  foreach ($hdata as $h1) {
+    $h = explode('/', $h1);
+    if (sizeof($h)==2) { // by date
+      $htime = mktime(0, 0, 0, $h[0], $h[1], $y); // time of holiday
+      $w = date('w', $htime); // get weekday of holiday
+      $htime += $w==0 ? 86400 : ($w==6 ? -86400 : 0); // if weekend, adjust
+    }
+    else { // by weekday
+      $htime = mktime(0, 0, 0, $h[2], 1, $y); // get 1st day of month
+      $w = date('w', $htime); // weekday of first day of month
+      $d = 1+($h[1]-$w+7)%7; // get to the 1st weekday
+      for ($t=$htime, $i=1; $i<=$h[0]; $i++, $d+=7) { // iterate to nth weekday
+        $t = mktime(0, 0, 0, $h[2], $d, $y); // get next weekday
+        if (date('n', $t)>$h[2]) break; // check that it's still in the same month
+        $htime = $t; // valid
+      }
+    }
+    $holidays[] = $htime; // save the holiday
+  }
+
+  for ($i = 0; $i < 5; $i++, $time += 86400) { // 5 days should be enough to get to workday
+    if (in_array(date('w', $time), array(0, 6))) {
+      continue; // skip weekends
+    }
+
+    foreach ($holidays as $h) { // iterate through holidays
+      if ($time >= $h && $time < $h+86400) {
+        continue 2; // skip holidays
+      }
+    }
+    break; // found the workday
+  }
+
+  return $time;
+}
+
+
+
+
+/**
+ * Modify the rate received from UPS before displaying to the customer.
+ */
+function freightquote_markup($rate) {
+  $markup = variable_get('freightquote_markup', '0');
+  $type = variable_get('freightquote_markup_type', '%');
+  if (is_numeric(trim($markup))) {
+    switch ($type) {
+      case '%':
+        return $rate + $rate * floatval(trim($markup)) / 100;
+      case 'x':
+        return $rate * floatval(trim($markup));
+      case '$':
+        return $rate + floatval(trim($markup));
+    }
+  }
+  return $rate;
 }
