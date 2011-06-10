@@ -89,27 +89,29 @@ function __freightquote_products($products) {
     if ($product->nid && isset($product->freightquote)) {
       $freightquote = $product->freightquote;
 
-      $Products[] = array(
-        'Class' => (int)$freightquote['class'],
-        'Weight' => $product->weight,
-        'Length' => $product->length,
-        'Width' => $product->width,
-        'Height' => $product->height,
-        'ProductDescription' => $product->title,
-        'PackageType' => $freightquote['package_type'],
-        'IsStackable' => TRUE,
-        'DeclaredValue' => 0.0,
-        'CommodityType' => $freightquote['commodity_type'],
-        'ContentType' => $freightquote['content_type'],
-        'IsHazardousMaterial' => FALSE,
-        'DimWeight' => 0,
-        'EstimatedWeight' => $product->weight,
-        'PieceCount' => $product->pkg_qty,
-        'ItemNumber' => 0,
-        'STC' => 0);
+      for ($i = 1; $i <= $product->qty; ++$i) {
+        $Products[] = array(
+          'Class' => (int)$freightquote['class'],
+          'Weight' => $product->weight,
+          'Length' => $product->length,
+          'Width' => $product->width,
+          'Height' => $product->height,
+          'ProductDescription' => $product->title,
+          'PackageType' => $freightquote['package_type'],
+          'IsStackable' => TRUE,
+          'DeclaredValue' => 0.0,
+          'CommodityType' => $freightquote['commodity_type'],
+          'ContentType' => $freightquote['content_type'],
+          'IsHazardousMaterial' => FALSE,
+          'DimWeight' => 0,
+          'EstimatedWeight' => $product->weight,
+          'PieceCount' => $product->pkg_qty,
+          'ItemNumber' => $i,
+          'STC' => 0);
+      }
     }
   }
-  
+
   return $Products;
 }
 
