@@ -1,5 +1,14 @@
 <?php
 /**
+ * @file FreightQuote module.
+ */
+
+/**
+ * @TODO: Remove me
+ */
+ini_set('soap.wsdl_cache_ttl', 1);
+
+/**
  * FreightQuote API
  * - WSDL:
  *  https://b2b.freightquote.com/WebService/QuoteService.asmx?wsdl
@@ -160,7 +169,7 @@ function freightquote_ca_predicate() {
     '#title' => $title,
     '#trigger' => 'get_quote_from_freightquote',
     '#class' => 'freightquote',
-    '#status' => variable_get('freightquote_enabled', FALSE),
+    '#status' => variable_get('freightquote_enabled', TRUE),
     '#actions' => array(
       array(
         '#name' => 'uc_quote_action_get_quote',
@@ -186,10 +195,15 @@ function freightquote_ca_predicate() {
  */
 function freightquote_get_quote($products, $location_destination, $method) {
   if ($method['enabled']) {
-    module_load_include('inc', 'freightquote');
-
     $location_origin = variable_get('uc_quote_store_default_address', new stdClass());
-    return freightquote_quote($location_origin, $location_destination, $products);
+
+    # old way
+    # module_load_include('inc', 'freightquote');
+    # return freightquote_quote($location_origin, $location_destination, $products);
+
+    # better quote
+    module_load_include('packing.inc', 'freightquote');
+    return freightquote_better_quote($location_origin, $location_destination, $products);
   }
 }
 

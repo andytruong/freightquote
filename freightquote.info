@@ -1,6 +1,6 @@
 name = FreightQuote
 version = 6.x-1.x-dev
-description=FreightQuote integration for Ubercart
+description = FreightQuote integration for Ubercart
 core = 6.x
 dependencies[] = uc_quote
 package = Ubercart - fulfillment

@@ -56,7 +56,6 @@ function freightquote_quote($origin, $destination, $products) {
         $quotes[] = array(
           'option_label' => $option_label,
           'rate' => freightquote_markup($option->QuoteAmount),
-          # 'rate' => $option->QuoteAmount,
           'notes' => $option->IsGuaranteed ? 'Guaranteed: Yes' : '',
         );
       }
@@ -72,7 +71,7 @@ function freightquote_quote($origin, $destination, $products) {
       }
 
       $quote = array(
-        'option_label' => 'FreightQuote Error',
+        'option_label' => t('FreightQuote Error'),
         'notes' => theme('item_list', $notes),
       );
 
@@ -122,7 +121,7 @@ function __freightquote_products($products) {
  */
 function __freightquote_pickup_date() {
   $pickupdate = freightquote_get_next_working_day();
-  $pickupdate = date('Y-m-d\TH:i:s');
+  $pickupdate = date('Y-m-d\TH:i:s', $pickupdate);
   return $pickupdate;
 }
 
@@ -246,11 +245,9 @@ function freightquote_get_next_working_day($date = null) {
   return $time;
 }
 
-
-
-
 /**
  * Modify the rate received from UPS before displaying to the customer.
+ * @see uc_ups_markup().
  */
 function freightquote_markup($rate) {
   $markup = variable_get('freightquote_markup', '0');
